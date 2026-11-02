@@ -90,8 +90,8 @@
     transition: background 1s linear, color 1s linear;
   }
   .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-  .city { font-family: var(--display); font-weight: 700; font-size: clamp(1.45rem, 2vw, 3rem); line-height: 1.1; margin: 0; }
-  .region { font-size: clamp(0.9rem, 1vw, 1.4rem); opacity: 0.75; margin: 2px 0 0; }
+  .city { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 2.7vw, 3.6rem); line-height: 1.1; margin: 0; }
+  .region { font-size: clamp(1rem, 1.2vw, 1.7rem); opacity: 0.75; margin: 2px 0 0; }
   .remove {
     background: transparent; border: 0; color: inherit; opacity: 0.55; font-size: 1.3rem; line-height: 1;
     width: 32px; height: 32px; border-radius: 50%; flex: none;
@@ -103,15 +103,15 @@
     .card .remove:hover { opacity: 1; }
   }
 
-  svg.face { width: clamp(96px, 15vh, 240px); height: clamp(96px, 15vh, 240px); align-self: center; display: block; }
+  svg.face { width: clamp(96px, 11vh, 190px); height: clamp(96px, 11vh, 190px); align-self: center; display: block; }
   .hand { stroke: currentColor; stroke-linecap: round; }
   .face .rim { fill: none; stroke: currentColor; stroke-opacity: 0.3; stroke-width: 1.2; }
 
   .digital { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px; font-family: var(--display); font-variant-numeric: tabular-nums; }
-  .hm { font-size: clamp(2.3rem, min(4vw, 7.5vh), 6rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
-  .sec { font-size: clamp(1.2rem, 1.7vw, 2.4rem); opacity: 0.7; font-weight: 500; }
-  .ampm { font-size: clamp(1rem, 1.4vw, 2rem); font-weight: 600; opacity: 0.85; }
-  .date { text-align: center; margin: 0; font-weight: 500; font-size: clamp(1rem, 1.2vw, 1.7rem); }
+  .hm { font-size: clamp(2.6rem, min(5vw, 9.5vh), 8rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .sec { font-size: clamp(1.3rem, 2vw, 2.8rem); opacity: 0.7; font-weight: 500; }
+  .ampm { font-size: clamp(1.1rem, 1.6vw, 2.2rem); font-weight: 600; opacity: 0.85; }
+  .date { text-align: center; margin: 0; font-weight: 500; font-size: clamp(1.2rem, 1.7vw, 2.4rem); }
 
   .strip { position: relative; height: 10px; border-radius: 6px; margin-top: auto; }
   .marker {
@@ -121,6 +121,12 @@
   .meta { display: flex; justify-content: space-between; gap: 8px; font-size: clamp(0.9rem, 1vw, 1.4rem); opacity: 0.85; margin: 0; }
 
   .empty { grid-column: 1 / -1; padding: 40px 0; color: #9aa1c9; }
+
+  .card { cursor: grab; user-select: none; -webkit-user-select: none; }
+  .card.dragging { z-index: 20; pointer-events: none; cursor: grabbing; transition: none; box-shadow: 0 18px 50px rgba(0,0,0,0.7); }
+  .card.drop-target { outline: 3px solid #fff; outline-offset: -3px; }
+  body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
+  @media (pointer: fine) { .card { touch-action: none; } }
 
   @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
   @media (max-width: 520px) { .add { width: 100%; } input[type="text"] { flex: 1; width: auto; } }
@@ -138,6 +144,11 @@
   var FALLBACK_LIST = ["Pacific/Auckland","Australia/Perth","Asia/Singapore","Asia/Hong_Kong","Asia/Shanghai","Asia/Seoul","Europe/Paris","Europe/Berlin","Europe/Moscow","Africa/Cairo","Africa/Johannesburg","America/Sao_Paulo","America/Chicago","America/Denver","America/Toronto","Pacific/Honolulu","UTC"];
 
   var zones = DEFAULT_ZONES.slice();
+  try {
+    var savedOrder = JSON.parse(localStorage.getItem("wc-order") || "null");
+    if (Array.isArray(savedOrder) && savedOrder.length === DEFAULT_ZONES.length &&
+        savedOrder.slice().sort().join("|") === DEFAULT_ZONES.slice().sort().join("|")) zones = savedOrder;
+  } catch (e) {}
   var use24 = false;
 
   var grid = document.getElementById("grid");
@@ -229,10 +240,11 @@
     var n = nameFor(z);
     var el = document.createElement("article");
     el.className = "card";
+    el.dataset.zone = z;
+    el.tabIndex = 0;
     el.setAttribute("aria-label", n.city + " clock");
     el.innerHTML =
-      '<div class="top"><div><h2 class="city"></h2><p class="region"></p></div>' +
-      '<button type="button" class="remove" aria-label="Remove clock"></button></div>' +
+      '<div class="top"><div><h2 class="city"></h2><p class="region"></p></div></div>' +
       buildFace() +
       '<div class="digital"><span class="hm"></span><span class="sec"></span><span class="ampm"></span></div>' +
       '<p class="date"></p>' +
@@ -240,13 +252,6 @@
       '<p class="meta"><span class="off"></span><span class="diff"></span></p>';
     el.querySelector(".city").textContent = n.city;
     el.querySelector(".region").textContent = n.region;
-    var rm = el.querySelector(".remove");
-    rm.textContent = "×";
-    rm.setAttribute("aria-label", "Remove " + n.city);
-    rm.addEventListener("click", function () {
-      zones = zones.filter(function (x) { return x !== z; });
-      render();
-    });
     el.querySelector(".strip").style.background = stripGradient;
     return {
       el: el,
@@ -316,6 +321,77 @@
 
   /* Drop any saved zone this browser can't handle */
   zones = zones.filter(function (z) { try { getFmt(realTz(z)); return true; } catch (e) { return false; } });
+
+  /* Drag and drop to reorder (hold and drag a tile onto another tile) */
+  var drag = null;
+
+  function saveOrder() {
+    try { localStorage.setItem("wc-order", JSON.stringify(zones)); } catch (e) {}
+  }
+  function moveZone(from, to) {
+    zones.splice(to, 0, zones.splice(from, 1)[0]);
+    saveOrder();
+    render();
+  }
+
+  grid.addEventListener("pointerdown", function (ev) {
+    if (ev.pointerType === "mouse" && ev.button !== 0) return;
+    var card = ev.target.closest(".card");
+    if (!card) return;
+    drag = { card: card, sx: ev.clientX, sy: ev.clientY, id: ev.pointerId, active: false, target: null };
+  });
+
+  window.addEventListener("pointermove", function (ev) {
+    if (!drag || ev.pointerId !== drag.id) return;
+    var dx = ev.clientX - drag.sx, dy = ev.clientY - drag.sy;
+    if (!drag.active) {
+      if (Math.hypot(dx, dy) < 8) return;
+      drag.active = true;
+      drag.card.classList.add("dragging");
+      document.body.classList.add("is-dragging");
+    }
+    drag.card.style.transform = "translate(" + dx + "px, " + dy + "px) scale(1.03)";
+    var el = document.elementFromPoint(ev.clientX, ev.clientY);
+    var t = el && el.closest ? el.closest(".card") : null;
+    if (t === drag.card) t = null;
+    if (t !== drag.target) {
+      if (drag.target) drag.target.classList.remove("drop-target");
+      if (t) t.classList.add("drop-target");
+      drag.target = t;
+    }
+  });
+
+  function endDrag(ev, cancelled) {
+    if (!drag || ev.pointerId !== drag.id) return;
+    var d = drag;
+    drag = null;
+    document.body.classList.remove("is-dragging");
+    if (!d.active) return;
+    d.card.classList.remove("dragging");
+    d.card.style.transform = "";
+    if (d.target) d.target.classList.remove("drop-target");
+    if (!cancelled && d.target) {
+      var from = zones.indexOf(d.card.dataset.zone);
+      var to = zones.indexOf(d.target.dataset.zone);
+      if (from > -1 && to > -1 && from !== to) moveZone(from, to);
+    }
+  }
+  window.addEventListener("pointerup", function (ev) { endDrag(ev, false); });
+  window.addEventListener("pointercancel", function (ev) { endDrag(ev, true); });
+
+  /* Keyboard: focus a tile, then Alt + arrow keys to move it */
+  grid.addEventListener("keydown", function (ev) {
+    var card = ev.target.closest ? ev.target.closest(".card") : null;
+    if (!card || !ev.altKey) return;
+    var step = (ev.key === "ArrowLeft" || ev.key === "ArrowUp") ? -1 : (ev.key === "ArrowRight" || ev.key === "ArrowDown") ? 1 : 0;
+    if (!step) return;
+    ev.preventDefault();
+    var z = card.dataset.zone, i = zones.indexOf(z), j = i + step;
+    if (j < 0 || j >= zones.length) return;
+    moveZone(i, j);
+    var moved = grid.querySelector('.card[data-zone="' + z + '"]');
+    if (moved) moved.focus();
+  });
 
   render();
   setInterval(update, 1000);
