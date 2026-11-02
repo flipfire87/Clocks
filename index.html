@@ -55,7 +55,7 @@
     line-height: 1.5;
     min-height: 100vh;
   }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 20px 64px; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 40px 20px 64px; }
 
   header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
   h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.4rem); line-height: 1.1; letter-spacing: -0.02em; margin: 0; }
@@ -63,6 +63,7 @@
   .addbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); }
   .add { display: flex; gap: 8px; }
   .addbar .seg { margin-left: auto; }
+  .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
   input[type="text"] {
     font: inherit; color: var(--ink); background: var(--field);
     border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; width: 280px; max-width: 100%;
@@ -78,10 +79,13 @@
   :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   .msg { flex: 1 1 100%; min-height: 1.4em; margin: 0; color: var(--muted); font-size: 0.92rem; }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+  .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 440px) { .grid { grid-template-columns: minmax(0, 1fr); } }
 
   .card {
-    position: relative; border-radius: 22px; padding: 22px; overflow: hidden;
+    position: relative; border-radius: 22px; padding: 18px; overflow: hidden;
     display: flex; flex-direction: column; gap: 12px; min-height: 300px;
     transition: background 1s linear, color 1s linear;
   }
@@ -103,8 +107,8 @@
   .hand { stroke: currentColor; stroke-linecap: round; }
   .face .rim { fill: none; stroke: currentColor; stroke-opacity: 0.3; stroke-width: 1.2; }
 
-  .digital { display: flex; align-items: baseline; justify-content: center; gap: 6px; font-family: var(--display); font-variant-numeric: tabular-nums; }
-  .hm { font-size: 2.6rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .digital { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px; font-family: var(--display); font-variant-numeric: tabular-nums; }
+  .hm { font-size: 2.3rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
   .sec { font-size: 1.2rem; opacity: 0.7; font-weight: 500; }
   .ampm { font-size: 1rem; font-weight: 600; opacity: 0.85; }
   .date { text-align: center; margin: 0; font-weight: 500; }
@@ -124,9 +128,7 @@
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>World clocks</h1>
-  </header>
+  <h1 class="sr-only">World clocks</h1>
   <main class="grid" id="grid"></main>
   <section class="addbar" aria-label="Add a clock">
     <form class="add" id="addForm" autocomplete="off">
