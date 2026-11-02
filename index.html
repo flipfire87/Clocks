@@ -130,18 +130,6 @@
 <div class="wrap">
   <h1 class="sr-only">World clocks</h1>
   <main class="grid" id="grid"></main>
-  <section class="addbar" aria-label="Add a clock">
-    <form class="add" id="addForm" autocomplete="off">
-      <input type="text" id="tzInput" list="tzList" placeholder="Add a city or zone, e.g. Asia/Singapore" aria-label="Add a time zone">
-      <datalist id="tzList"></datalist>
-      <button type="submit" class="btn">Add clock</button>
-    </form>
-    <div class="seg" role="group" aria-label="Time format">
-      <button type="button" id="fmt12" aria-pressed="true">12-hour</button>
-      <button type="button" id="fmt24" aria-pressed="false">24-hour</button>
-    </div>
-    <p class="msg" id="msg" role="status" aria-live="polite"></p>
-  </section>
 </div>
 
 <script>
@@ -151,27 +139,14 @@
 
   var zones = DEFAULT_ZONES.slice();
   var use24 = false;
-  try {
-    var saved = JSON.parse(localStorage.getItem("wc-zones") || "null");
-    if (Array.isArray(saved)) zones = saved;
-    use24 = localStorage.getItem("wc-24h") === "1";
-  } catch (e) {}
 
   var grid = document.getElementById("grid");
-  var msg = document.getElementById("msg");
   var cards = {};
   var fmtCache = {};
 
   var localTz = (function () {
     try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (e) { return "UTC"; }
   })();
-
-  function save() {
-    try {
-      localStorage.setItem("wc-zones", JSON.stringify(zones));
-      localStorage.setItem("wc-24h", use24 ? "1" : "0");
-    } catch (e) {}
-  }
 
   function realTz(z) { return z === "local" ? localTz : z; }
 
@@ -270,8 +245,7 @@
     rm.setAttribute("aria-label", "Remove " + n.city);
     rm.addEventListener("click", function () {
       zones = zones.filter(function (x) { return x !== z; });
-      save(); render();
-      say("Removed " + n.city + ".");
+      render();
     });
     el.querySelector(".strip").style.background = stripGradient;
     return {
@@ -329,7 +303,7 @@
     if (!zones.length) {
       var e = document.createElement("p");
       e.className = "empty";
-      e.textContent = "No clocks yet. Add a city or time zone below to start.";
+      e.textContent = "No clocks left. Reload the page to bring them back.";
       grid.appendChild(e);
       return;
     }
@@ -339,55 +313,6 @@
     });
     update();
   }
-
-  function say(t) { msg.textContent = t; }
-
-  /* Zone list for suggestions */
-  var all = [];
-  try { all = Intl.supportedValuesOf("timeZone"); } catch (e) { all = FALLBACK_LIST; }
-  var dl = document.getElementById("tzList");
-  all.forEach(function (z) {
-    var o = document.createElement("option");
-    o.value = z;
-    dl.appendChild(o);
-  });
-
-  function resolveZone(input) {
-    var q = input.trim().toLowerCase().replace(/\s+/g, "_");
-    if (!q) return null;
-    var exact = all.filter(function (z) { return z.toLowerCase() === q; })[0];
-    if (exact) return exact;
-    var byCity = all.filter(function (z) { return z.split("/").pop().toLowerCase() === q; })[0];
-    if (byCity) return byCity;
-    var partial = all.filter(function (z) { return z.toLowerCase().indexOf(q) !== -1; });
-    return partial.length === 1 ? partial[0] : null;
-  }
-
-  document.getElementById("addForm").addEventListener("submit", function (ev) {
-    ev.preventDefault();
-    var input = document.getElementById("tzInput");
-    var z = resolveZone(input.value);
-    if (!z) {
-      say("Couldn’t find “" + input.value.trim() + "”. Pick a zone from the suggestions, like Europe/Paris.");
-      return;
-    }
-    try { getFmt(z); } catch (e) { say("That time zone isn’t supported in this browser."); return; }
-    if (zones.indexOf(z) !== -1) { say(nameFor(z).city + " is already on the page."); return; }
-    zones.push(z);
-    save(); render();
-    input.value = "";
-    say("Added " + nameFor(z).city + ".");
-  });
-
-  function setFmt(v) {
-    use24 = v;
-    document.getElementById("fmt12").setAttribute("aria-pressed", String(!v));
-    document.getElementById("fmt24").setAttribute("aria-pressed", String(v));
-    save(); update();
-  }
-  document.getElementById("fmt12").addEventListener("click", function () { setFmt(false); });
-  document.getElementById("fmt24").addEventListener("click", function () { setFmt(true); });
-  setFmt(use24);
 
   /* Drop any saved zone this browser can't handle */
   zones = zones.filter(function (z) { try { getFmt(realTz(z)); return true; } catch (e) { return false; } });
