@@ -103,7 +103,7 @@
     .card .remove:hover { opacity: 1; }
   }
 
-  svg.face { width: clamp(96px, 11vh, 190px); height: clamp(96px, 11vh, 190px); align-self: center; display: block; }
+  svg.face { width: clamp(80px, 9vh, 170px); height: clamp(80px, 9vh, 170px); align-self: center; display: block; }
   .hand { stroke: currentColor; stroke-linecap: round; }
   .face .rim { fill: none; stroke: currentColor; stroke-opacity: 0.3; stroke-width: 1.2; }
 
@@ -123,6 +123,11 @@
   .empty { grid-column: 1 / -1; padding: 40px 0; color: #9aa1c9; }
 
   .card { cursor: grab; user-select: none; -webkit-user-select: none; }
+  .region, .date, .meta { line-height: 1.2; }
+  .utcbar { display: flex; align-items: baseline; justify-content: center; gap: 18px; padding: 2px 0 12px; color: #ffffff; font-family: var(--display); font-variant-numeric: tabular-nums; }
+  .utc-label { font-size: clamp(1rem, 1.2vw, 1.6rem); font-weight: 600; letter-spacing: 0.14em; color: #9aa1c9; }
+  .utc-time { font-size: clamp(1.6rem, 2.4vw, 3.2rem); font-weight: 700; line-height: 1; }
+  .utc-date { font-size: clamp(1rem, 1.2vw, 1.6rem); color: #9aa1c9; }
   .card.dragging { z-index: 20; pointer-events: none; cursor: grabbing; transition: none; box-shadow: 0 18px 50px rgba(0,0,0,0.7); }
   .card.drop-target { outline: 3px solid #fff; outline-offset: -3px; }
   body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
@@ -135,6 +140,11 @@
 <body>
 <div class="wrap">
   <h1 class="sr-only">World clocks</h1>
+  <div class="utcbar" role="timer" aria-label="Coordinated Universal Time">
+    <span class="utc-label">UTC</span>
+    <span class="utc-time" id="utcTime"></span>
+    <span class="utc-date" id="utcDate"></span>
+  </div>
   <main class="grid" id="grid"></main>
 </div>
 
@@ -149,7 +159,7 @@
     if (Array.isArray(savedOrder) && savedOrder.length === DEFAULT_ZONES.length &&
         savedOrder.slice().sort().join("|") === DEFAULT_ZONES.slice().sort().join("|")) zones = savedOrder;
   } catch (e) {}
-  var use24 = false;
+  var use24 = true;
 
   var grid = document.getElementById("grid");
   var cards = {};
@@ -195,7 +205,7 @@
       return { city: "Your time", region: n };
     }
     var bits = z.split("/");
-    var city = bits[bits.length - 1].replace(/_/g, " ");
+    var city = ({ "Asia/Dubai": "Abu Dhabi" })[z] || bits[bits.length - 1].replace(/_/g, " ");
     var region = bits.length > 1 ? bits[0].replace(/_/g, " ") : "Universal";
     return { city: city, region: region };
   }
@@ -266,6 +276,12 @@
 
   function update() {
     var now = new Date();
+    var pad2 = function (n) { return String(n).padStart(2, "0"); };
+    document.getElementById("utcTime").textContent =
+      pad2(now.getUTCHours()) + ":" + pad2(now.getUTCMinutes()) + ":" + pad2(now.getUTCSeconds());
+    document.getElementById("utcDate").textContent =
+      ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][now.getUTCDay()] + " " +
+      now.getUTCDate() + " " + MONTHS[now.getUTCMonth()] + " " + now.getUTCFullYear();
     var base = parts(localTz, now);
     zones.forEach(function (z) {
       var c = cards[z];
