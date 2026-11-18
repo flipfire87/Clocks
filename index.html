@@ -118,12 +118,14 @@
     position: absolute; top: -4px; width: 4px; height: 18px; border-radius: 2px;
     background: currentColor; box-shadow: 0 0 0 2px rgba(127,127,127,0.35); transform: translateX(-2px);
   }
-  .meta { display: flex; justify-content: space-between; gap: 8px; font-size: clamp(0.9rem, 1vw, 1.4rem); opacity: 0.85; margin: 0; }
+  .meta { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; font-size: clamp(0.9rem, 1vw, 1.4rem); opacity: 0.85; margin: 0; }
 
   .empty { grid-column: 1 / -1; padding: 40px 0; color: #9aa1c9; }
 
   .card { cursor: grab; user-select: none; -webkit-user-select: none; }
   .region, .date, .meta { line-height: 1.2; }
+  .meta .diff { text-align: right; }
+  .meta .ampm { font-size: clamp(1rem, 1.15vw, 1.6rem); }
   .utcbar { display: flex; align-items: baseline; justify-content: center; gap: 18px; padding: 2px 0 12px; color: #ffffff; font-family: var(--display); font-variant-numeric: tabular-nums; }
   .utc-label { font-size: clamp(1rem, 1.2vw, 1.6rem); font-weight: 600; letter-spacing: 0.14em; color: #9aa1c9; }
   .utc-time { font-size: clamp(1.6rem, 2.4vw, 3.2rem); font-weight: 700; line-height: 1; }
@@ -140,7 +142,7 @@
     svg.face { width: 11vh; height: 11vh; }
     .hm { font-size: min(5.4vw, 10.5vh); }
     .sec { font-size: 2.1vw; }
-    .ampm { font-size: 1.7vw; }
+    .meta .ampm { font-size: 1.25vw; }
     .date { font-size: 1.9vw; }
     .meta { font-size: 1.1vw; }
     .utc-time { font-size: 2.8vw; }
@@ -277,10 +279,10 @@
     el.innerHTML =
       '<div class="top"><div><h2 class="city"></h2><p class="region"></p></div></div>' +
       buildFace() +
-      '<div class="digital"><span class="hm"></span><span class="sec"></span><span class="ampm"></span></div>' +
+      '<div class="digital"><span class="hm"></span><span class="sec"></span></div>' +
       '<p class="date"></p>' +
       '<div class="strip" title="Position in this city’s day"><span class="marker"></span></div>' +
-      '<p class="meta"><span class="off"></span><span class="diff"></span></p>';
+      '<p class="meta"><span class="off"></span><span class="ampm"></span><span class="diff"></span></p>';
     el.querySelector(".city").textContent = n.city;
     if (n.city.length > 12) el.querySelector(".city").classList.add("long");
     el.querySelector(".region").textContent = n.region;
