@@ -9,100 +9,162 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    color-scheme: dark;
+    color-scheme: light;
+    --bg: #eef0f5;
+    --ink: #151a33;
+    --muted: #5b6285;
+    --line: #cfd4e4;
+    --field: #ffffff;
+    --accent: #3a4bd1;
+    --accent-ink: #ffffff;
     --display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
     --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --accent: #8c9bff;
-    --pad: clamp(14px, 1.2vw, 24px);
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0d1020;
+      --ink: #e8eaf8;
+      --muted: #9aa1c9;
+      --line: #2a3057;
+      --field: #161a33;
+      --accent: #8c9bff;
+      --accent-ink: #0d1020;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d1020;
+    --ink: #e8eaf8;
+    --muted: #9aa1c9;
+    --line: #2a3057;
+    --field: #161a33;
+    --accent: #8c9bff;
+    --accent-ink: #0d1020;
+  }
   html { background: #000; scroll-padding-top: env(safe-area-inset-top, 0px); }
   *, *::before, *::after { box-sizing: inherit; }
-  body { margin: 0; background: #000; color: #fff; font-family: var(--body); line-height: 1.5; min-height: 100vh; }
-  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  body {
+    margin: 0;
+    background: #000;
+    color: var(--ink);
+    font-family: var(--body);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .wrap { position: relative; max-width: none; min-height: 100vh; margin: 0 auto; padding: 12px; display: flex; flex-direction: column; }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+  h1 { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 4vw, 2.4rem); line-height: 1.1; letter-spacing: -0.02em; margin: 0; }
+
+  .addbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .add { display: flex; gap: 8px; }
+  .addbar .seg { margin-left: auto; }
   .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-
-  .wrap { position: relative; min-height: 100vh; min-height: 100dvh; padding: 12px; display: flex; flex-direction: column; }
-
-  /* Logo and UTC bar scale with the window (width and height) */
-  .logo { display: block; align-self: flex-start; height: 28px; width: auto; margin: 2px 0 8px 4px; pointer-events: none; user-select: none; }
-  .utcbar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 4px 18px; padding: 2px 0 12px; color: #fff; font-family: var(--display); font-variant-numeric: tabular-nums; }
-  .utc-label { font-size: clamp(0.85rem, min(1.2vw, 2.4vh), 1.8rem); font-weight: 600; letter-spacing: 0.14em; color: #9aa1c9; }
-  .utc-time { font-size: clamp(1.4rem, min(2.4vw, 4.8vh), 3.6rem); font-weight: 700; line-height: 1; }
-  .utc-date { font-size: clamp(0.85rem, min(1.2vw, 2.4vh), 1.8rem); color: #9aa1c9; }
-  @media (min-width: 900px) {
-    .logo { position: absolute; top: 16px; left: 30px; margin: 0; height: clamp(20px, min(2vw, 3.9vh), 56px); }
+  input[type="text"] {
+    font: inherit; color: var(--ink); background: var(--field);
+    border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; width: 280px; max-width: 100%;
   }
+  button { font: inherit; cursor: pointer; }
+  .btn {
+    border: 1px solid transparent; background: var(--accent); color: var(--accent-ink);
+    border-radius: 12px; padding: 10px 16px; font-weight: 600;
+  }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--field); }
+  .seg button { background: transparent; border: 0; color: var(--muted); padding: 10px 14px; font-weight: 500; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .msg { flex: 1 1 100%; min-height: 1.4em; margin: 0; color: var(--muted); font-size: 0.92rem; }
 
-  /* Grid: 1 column on phones, 2 on tablets and portrait screens, 4 x 2 on landscape desktops */
-  .grid { display: grid; flex: 1; gap: 12px; grid-template-columns: minmax(0, 1fr); grid-auto-rows: minmax(280px, 1fr); }
-  @media (min-width: 521px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (min-width: 900px) and (min-aspect-ratio: 1/1) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .grid { display: grid; flex: 1; grid-auto-rows: 1fr; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 760px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 440px) { .grid { grid-template-columns: minmax(0, 1fr); } }
 
-  /* Each tile is a size container, so everything inside scales to the tile's own width and height */
   .card {
-    container-type: size;
-    position: relative; border-radius: clamp(12px, 1.4vw, 28px); padding: var(--pad); overflow: hidden;
-    display: flex; flex-direction: column; justify-content: space-between; gap: 0;
+    position: relative; border-radius: 22px; padding: clamp(16px, 1.2vw, 24px); overflow: hidden;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 8px;
     transition: background 1s linear, color 1s linear;
-    cursor: grab; user-select: none; -webkit-user-select: none;
   }
-  .card > * { flex-shrink: 0; }
   .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-  .city { font-family: var(--display); font-weight: 700; line-height: 1.1; margin: 0;
-    font-size: clamp(1.4rem, 2.6vw, 3.4rem);
-    font-size: max(16px, min(12.4cqw, 13.4cqh)); }
-  .card .city.long { white-space: nowrap; letter-spacing: -0.02em;
-    font-size: clamp(1.3rem, 2.4vw, 3.1rem);
-    font-size: max(14px, min(11.6cqw, 12.5cqh)); }
-  .region { margin: 2px 0 0; opacity: 0.75; line-height: 1.2;
-    font-size: clamp(0.9rem, 1.2vw, 1.7rem);
-    font-size: max(11px, min(5.6cqw, 6.1cqh)); }
+  .city { font-family: var(--display); font-weight: 700; font-size: clamp(1.8rem, 2.7vw, 3.6rem); line-height: 1.1; margin: 0; }
+  .region { font-size: clamp(1rem, 1.2vw, 1.7rem); opacity: 0.75; margin: 2px 0 0; }
+  .remove {
+    background: transparent; border: 0; color: inherit; opacity: 0.55; font-size: 1.3rem; line-height: 1;
+    width: 32px; height: 32px; border-radius: 50%; flex: none;
+  }
+  .remove:hover { opacity: 1; background: rgba(127,127,127,0.25); }
+  @media (hover: hover) {
+    .remove { opacity: 0; }
+    .card:hover .remove, .remove:focus-visible { opacity: 0.7; }
+    .card .remove:hover { opacity: 1; }
+  }
 
-  svg.face { display: block; align-self: center; flex: none;
-    width: clamp(70px, 9vh, 170px); height: clamp(70px, 9vh, 170px);
-    width: max(48px, min(21cqw, 22.6cqh)); height: max(48px, min(21cqw, 22.6cqh)); }
+  svg.face { width: clamp(80px, 9vh, 170px); height: clamp(80px, 9vh, 170px); align-self: center; display: block; }
   .hand { stroke: currentColor; stroke-linecap: round; }
   .face .rim { fill: none; stroke: currentColor; stroke-opacity: 0.3; stroke-width: 1.2; }
 
   .digital { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px; font-family: var(--display); font-variant-numeric: tabular-nums; }
-  .hm { font-weight: 700; letter-spacing: -0.02em; line-height: 1;
-    font-size: clamp(2.4rem, min(4.7vw, 9.5vh), 7rem);
-    font-size: max(28px, min(24cqw, 23.7cqh)); }
-  .sec { opacity: 0.7; font-weight: 500;
-    font-size: clamp(1.2rem, 2vw, 2.8rem);
-    font-size: max(14px, min(10cqw, 10.5cqh)); }
-  .date { text-align: center; margin: 0; font-weight: 500; line-height: 1.2;
-    font-size: clamp(1.1rem, 1.7vw, 2.4rem);
-    font-size: max(12px, min(7.6cqw, 8.4cqh)); }
+  .hm { font-size: clamp(2.6rem, min(5vw, 9.5vh), 8rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .sec { font-size: clamp(1.3rem, 2vw, 2.8rem); opacity: 0.7; font-weight: 500; }
+  .ampm { font-size: clamp(1.1rem, 1.6vw, 2.2rem); font-weight: 700; opacity: 1; }
+  .date { text-align: center; margin: 0; font-weight: 500; font-size: clamp(1.2rem, 1.7vw, 2.4rem); }
 
-  .strip { position: relative; border-radius: 6px; margin-top: auto; height: 10px; height: max(6px, 2.6cqh); }
-  .marker { position: absolute; top: 50%; width: 4px; width: max(3px, 1cqh); height: 180%; border-radius: 2px;
-    background: currentColor; box-shadow: 0 0 0 2px rgba(127,127,127,0.35); transform: translate(-50%, -50%); }
-
-  .meta { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin: 0; line-height: 1.2;
-    font-size: clamp(0.85rem, 1vw, 1.4rem);
-    font-size: max(10px, min(4.5cqw, 5cqh)); }
-  .meta .diff { text-align: right; }
-  .meta .off, .meta .diff { opacity: 0.85; }
-  .meta .ampm { font-family: var(--display); font-weight: 800; opacity: 1;
-    font-size: clamp(0.95rem, 1.15vw, 1.6rem);
-    font-size: max(11px, min(5.2cqw, 5.8cqh)); }
-
-  .flag { position: absolute; top: var(--pad); right: var(--pad); aspect-ratio: 3 / 2; opacity: 0.5; line-height: 0; pointer-events: none;
-    width: clamp(22px, 1.8vw, 46px);
-    width: max(20px, min(8.4cqw, 9.2cqh)); }
-  .flag svg { display: block; width: 100%; height: 100%; border-radius: 2px; }
+  .strip { position: relative; height: 10px; border-radius: 6px; margin-top: auto; }
+  .marker {
+    position: absolute; top: -4px; width: 4px; height: 18px; border-radius: 2px;
+    background: currentColor; box-shadow: 0 0 0 2px rgba(127,127,127,0.35); transform: translateX(-2px);
+  }
+  .meta { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; font-size: clamp(0.9rem, 1vw, 1.4rem); margin: 0; }
 
   .empty { grid-column: 1 / -1; padding: 40px 0; color: #9aa1c9; }
 
+  .card { cursor: grab; user-select: none; -webkit-user-select: none; }
+  .region, .date, .meta { line-height: 1.2; }
+  .meta .diff { text-align: right; }
+  .corner { position: absolute; top: clamp(16px, 1.2vw, 24px); right: clamp(16px, 1.2vw, 24px); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: none; }
+  .flag { width: clamp(24px, 1.8vw, 46px); aspect-ratio: 3 / 2; opacity: 0.5; line-height: 0; }
+  .flag svg { display: block; width: 100%; height: 100%; border-radius: 2px; }
+  .wx { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; opacity: 0.5; line-height: 1; font-family: var(--display); font-weight: 700; font-variant-numeric: tabular-nums; font-size: clamp(0.8rem, 1vw, 1.3rem); }
+  .wx svg { display: block; width: 1.8em; height: 1.8em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .meta .off, .meta .diff { opacity: 0.85; }
+  .meta .ampm { font-family: var(--display); font-weight: 800; opacity: 1; font-size: clamp(1rem, 1.15vw, 1.6rem); }
+  .utcbar { display: flex; align-items: baseline; justify-content: center; gap: 18px; padding: 2px 0 12px; color: #ffffff; font-family: var(--display); font-variant-numeric: tabular-nums; }
+  .utc-label { font-size: clamp(1rem, 1.2vw, 1.6rem); font-weight: 600; letter-spacing: 0.14em; color: #9aa1c9; }
+  .utc-time { font-size: clamp(1.6rem, 2.4vw, 3.2rem); font-weight: 700; line-height: 1; }
+  .utc-date { font-size: clamp(1rem, 1.2vw, 1.6rem); color: #9aa1c9; }
+  .logo { position: absolute; top: 18px; left: 30px; height: clamp(20px, 2vw, 52px); width: auto; display: block; pointer-events: none; user-select: none; }
+
+  .card .city.long { font-size: clamp(1.4rem, 2.5vw, 3.2rem); white-space: nowrap; letter-spacing: -0.02em; }
+
+  /* Large, tall screens such as 1920x1200: use the extra height for bigger text */
+  @media (min-width: 1700px) and (min-height: 1040px) {
+    .card { padding: 1.3vw; }
+    .city { font-size: 3vw; }
+    .region { font-size: 1.35vw; }
+    .corner { top: 1.3vw; right: 1.3vw; }
+    .flag { width: 2vw; }
+    .wx { font-size: 1.1vw; }
+    svg.face { width: 11vh; height: 11vh; }
+    .hm { font-size: min(5.4vw, 10.5vh); }
+    .sec { font-size: 2.1vw; }
+    .meta .ampm { font-size: 1.25vw; }
+    .date { font-size: 1.9vw; }
+    .meta { font-size: 1.1vw; }
+    .utc-time { font-size: 2.8vw; }
+    .utc-label, .utc-date { font-size: 1.3vw; }
+    .logo { height: 2.3vw; top: 20px; }
+  }
   .card.dragging { z-index: 20; pointer-events: none; cursor: grabbing; transition: none; box-shadow: 0 18px 50px rgba(0,0,0,0.7); }
   .card.drop-target { outline: 3px solid #fff; outline-offset: -3px; }
   body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
   @media (pointer: fine) { .card { touch-action: none; } }
+
   @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+  @media (max-width: 520px) { .add { width: 100%; } input[type="text"] { flex: 1; width: auto; } }
 </style>
 </head>
 <body>
@@ -288,21 +350,81 @@
     el.querySelector(".city").textContent = n.city;
     if (n.city.length > 12) el.querySelector(".city").classList.add("long");
     el.querySelector(".region").textContent = n.region;
+    var corner = document.createElement("div");
+    corner.className = "corner";
     var flagHtml = flagSvg(FLAG_OF[z]);
     if (flagHtml) {
       var fw = document.createElement("div");
       fw.className = "flag";
       fw.innerHTML = flagHtml;
-      el.appendChild(fw);
+      corner.appendChild(fw);
     }
+    var wxEl = document.createElement("div");
+    wxEl.className = "wx";
+    corner.appendChild(wxEl);
+    el.appendChild(corner);
     el.querySelector(".strip").style.background = stripGradient;
     return {
       el: el,
       h: el.querySelector(".h"), m: el.querySelector(".m"), sc: el.querySelector(".sc"),
       hm: el.querySelector(".hm"), sec: el.querySelector(".sec"), ampm: el.querySelector(".ampm"),
       date: el.querySelector(".date"), marker: el.querySelector(".marker"),
-      off: el.querySelector(".off"), diff: el.querySelector(".diff")
+      off: el.querySelector(".off"), diff: el.querySelector(".diff"), wx: wxEl
     };
+  }
+
+  /* Current weather from Open-Meteo (free, no key). Needs a host that allows requests to other sites, such as GitHub Pages. */
+  var COORDS = {
+    "Australia/Sydney": [-33.87, 151.21], "Australia/Perth": [-31.95, 115.86], "Pacific/Auckland": [-36.85, 174.76],
+    "Asia/Hong_Kong": [22.32, 114.17], "Asia/Dubai": [24.45, 54.38], "America/New_York": [40.71, -74.01],
+    "Europe/London": [51.51, -0.13], "Asia/Tokyo": [35.68, 139.69]
+  };
+  var CLOUD = "M7 15h10a3.5 3.5 0 0 0 .5-6.95A5 5 0 0 0 7.3 7.6 3.7 3.7 0 0 0 7 15z";
+  var WX_ICONS = {
+    clear: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>',
+    partly: '<circle cx="8" cy="8" r="2.8"/><path d="M8 2.5v1.3M2.5 8h1.3M4.1 4.1l.9.9M11.9 4.1l-.9.9"/><path d="M9 20h8.5a3.5 3.5 0 0 0 .5-6.96A4.7 4.7 0 0 0 9 13.2 3.4 3.4 0 0 0 9 20z"/>',
+    cloud: '<path d="M7 18h10a4 4 0 0 0 .6-7.95A5.5 5.5 0 0 0 7 9.6 4.2 4.2 0 0 0 7 18z"/>',
+    fog: '<path d="M4 8h16M6 12h12M4 16h16M7 20h10"/>',
+    rain: '<path d="' + CLOUD + '"/><path d="M8 18l-1 2.5M12 18l-1 2.5M16 18l-1 2.5"/>',
+    snow: '<path d="' + CLOUD + '"/><path d="M8 18.5v.01M12 20.5v.01M16 18.5v.01M10 22v.01M14 22v.01"/>',
+    storm: '<path d="' + CLOUD + '"/><path d="M12.6 15.5l-2.6 3.5h3.2l-1.7 3.2"/>'
+  };
+  var WX_NAMES = { clear: "Clear", partly: "Partly cloudy", cloud: "Cloudy", fog: "Fog", rain: "Rain", snow: "Snow", storm: "Thunderstorm" };
+  function wxKind(c) {
+    if (c === 0) return "clear";
+    if (c === 1 || c === 2) return "partly";
+    if (c === 3) return "cloud";
+    if (c === 45 || c === 48) return "fog";
+    if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) return "rain";
+    if ((c >= 71 && c <= 77) || c === 85 || c === 86) return "snow";
+    if (c >= 95) return "storm";
+    return "cloud";
+  }
+  var weather = {};
+  function paintWx() {
+    Object.keys(cards).forEach(function (z) {
+      var c = cards[z], w = weather[z];
+      if (!c || !c.wx || !w) return;
+      var kind = wxKind(w.code), t = Math.round(w.temp);
+      c.wx.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + WX_ICONS[kind] + '</svg><span>' + t + '\u00b0</span>';
+      c.wx.title = WX_NAMES[kind] + ", " + t + "\u00b0C";
+    });
+  }
+  function loadWx() {
+    var zs = zones.filter(function (z) { return COORDS[z]; });
+    if (!zs.length || typeof fetch !== "function") return;
+    var url = "https://api.open-meteo.com/v1/forecast?latitude=" + zs.map(function (z) { return COORDS[z][0]; }).join(",") +
+      "&longitude=" + zs.map(function (z) { return COORDS[z][1]; }).join(",") +
+      "&current=temperature_2m,weather_code&timezone=auto";
+    fetch(url).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (j) {
+        var list = Array.isArray(j) ? j : [j];
+        list.forEach(function (d, i) {
+          if (d && d.current && zs[i]) weather[zs[i]] = { temp: d.current.temperature_2m, code: d.current.weather_code };
+        });
+        paintWx();
+      })
+      .catch(function () { /* leave any existing weather in place */ });
   }
 
   var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -366,6 +488,7 @@
       grid.appendChild(cards[z].el);
     });
     update();
+    paintWx();
   }
 
   /* Drop any saved zone this browser can't handle */
@@ -444,6 +567,8 @@
 
   render();
   setInterval(update, 1000);
+  loadWx();
+  setInterval(loadWx, 10 * 60 * 1000);
 })();
 </script>
 </body>
