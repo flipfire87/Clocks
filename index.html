@@ -128,6 +128,7 @@
   .corner { position: absolute; top: clamp(16px, 1.2vw, 24px); right: clamp(16px, 1.2vw, 24px); display: flex; flex-direction: column; align-items: flex-end; gap: 6px; pointer-events: none; }
   .flag { width: clamp(24px, 1.8vw, 46px); aspect-ratio: 3 / 2; opacity: 0.5; line-height: 0; }
   .flag svg { display: block; width: 100%; height: 100%; border-radius: 2px; }
+  .city .flag { display: inline-block; width: 0.72em; height: 0.48em; aspect-ratio: auto; margin-left: 0.3em; vertical-align: middle; position: relative; top: -0.06em; }
   .wx { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; opacity: 0.5; line-height: 1; font-family: var(--display); font-weight: 700; font-variant-numeric: tabular-nums; font-size: clamp(0.8rem, 1vw, 1.3rem); }
   .wx svg { display: block; width: 1.8em; height: 1.8em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .meta .off, .meta .diff { opacity: 0.85; }
@@ -138,7 +139,7 @@
   .utc-date { font-size: clamp(1rem, 1.2vw, 1.6rem); color: #9aa1c9; }
   .logo { position: absolute; top: 18px; left: 30px; height: clamp(20px, 2vw, 52px); width: auto; display: block; pointer-events: none; user-select: none; }
 
-  .card .city.long { font-size: clamp(1.4rem, 2.5vw, 3.2rem); white-space: nowrap; letter-spacing: -0.02em; }
+  .card .city.long { font-size: clamp(1.3rem, 2.2vw, 2.8rem); white-space: nowrap; letter-spacing: -0.02em; }
 
   /* Large, tall screens such as 1920x1200: use the extra height for bigger text */
   @media (min-width: 1700px) and (min-height: 1040px) {
@@ -354,10 +355,10 @@
     corner.className = "corner";
     var flagHtml = flagSvg(FLAG_OF[z]);
     if (flagHtml) {
-      var fw = document.createElement("div");
+      var fw = document.createElement("span");
       fw.className = "flag";
       fw.innerHTML = flagHtml;
-      corner.appendChild(fw);
+      el.querySelector(".city").appendChild(fw);
     }
     var wxEl = document.createElement("div");
     wxEl.className = "wx";
